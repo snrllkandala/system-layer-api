@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="f2ffabac-cfca-4e70-a327-85f82db1db57">
+		<http:request-connection host="${secure::request.host}" />
+	</http:request-config>
+	<sub-flow name="developement-add-apiSub_Flow" doc:id="969e6c3b-9bae-4a04-a910-602b7442e286" >
+		<logger level="INFO" doc:name="Logger" doc:id="cc240183-0bdb-415b-917b-542b86af6dba" />
+		<crypto:jce-encrypt-pbe doc:name="Jce encrypt pbe" doc:id="1f99dc24-7984-43bc-8a48-eba59d6110a5" algorithm="PBEWithHmacSHA512AndAES_128" password="encryptgpay#$@%$"/>
+		<ee:transform doc:name="Transform Message" doc:id="91020162-deba-461b-af0d-e267466afca9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output text/plain
+---
+toBase64(payload as Binary)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="478bc997-0d5e-4fb9-b9ba-0c53a5e3ee6f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+"signature": payload	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="9239c700-b141-425d-82f1-8f17780a4e12" config-ref="HTTP_Request_configuration" path="${secure::request.path}" outputMimeType="application/json">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	
+"client_id":"gpay77846482!kol",
+"client_secret":"!23459klll()8(**&((^%&*!!!*"
+}]]]></http:headers>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="23f071a4-f157-4e4b-a20b-36dfaf4ec72d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+payload.signature]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="b405a38c-0de4-4e31-a86a-3ed610ed8644" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[
+%dw 2.0
+import * from dw::core::Binaries
+output application/octet-stream
+---
+fromBase64 (payload as String) as Binary]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<crypto:jce-decrypt-pbe doc:name="Jce decrypt pbe" doc:id="e623abfb-55a6-4a39-9d9f-ea0fc637bc8f" algorithm="PBEWithMD5AndTripleDES" password="sbigpayclient" outputMimeType="application/json"/>
+		<ee:transform doc:name="Transform Message" doc:id="25674f68-7ec8-4be9-a03b-e80577bf39f8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>
