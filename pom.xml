@@ -7,7 +7,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>mule-application</packaging>
 
-	<name>sbi-api</name>
+	<name>sbi-api-jenkins</name>
 
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,6 +30,17 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
+				<cloudHubDeployment>
+				<uri>https://anypoint.mulesoft.com</uri>
+				<username>${username}</username>
+				<password>${password}</password>
+				<environment>${environment}</environment>
+				<applicationName>${ application.name}</applicationName>
+				<muleVersion>${mule.version}</muleVersion>
+				<workers>${workers}</workers>
+				<workerType>${worker.Type}</workerType>
+				<objectStoreV2>true</objectStoreV2>
+				</cloudHubDeployment>
 				</configuration>
 			</plugin>
 		</plugins>
